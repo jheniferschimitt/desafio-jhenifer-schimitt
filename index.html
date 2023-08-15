@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta name="description" content="Página da caixa de lanchonete. Calcule o total da sua compra e escolha o método de pagamento.">
+        <title>Lanchonete 2023</title>
+        <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    </head>
+    <body style="background-color: #f8f8ff">
+        <main class="container mt-5">
+            <header>
+                <h1>Caixa da Lanchonete</h1>
+            </header>
+            <form id="form-lanchonete">
+                <section id="itemList" class="mb-3"></section>
+                <button type="button" id="addItem" class="btn btn-secondary mb-3">Adicionar Item</button>
+                <div class="mb-3">
+                    <label for="metodo-de-pagamento">Método de Pagamento</label>
+                    <select class="form-control" name="metodo-de-pagamento" id="metodo-de-pagamento">
+                        <option value="dinheiro">Dinheiro</option>
+                        <option value="credito">Crédito</option>
+                        <option value="debito">Débito</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary">Calcular</button>
+            </form>
+            <h3 class="mt-5">Total: <span id="result">R$ 0,00</span></h3>
+        </main>
+        <script src="/src/caixa-da-lanchonete.js" type="module"></script>
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const caixa = new CaixaDaLanchonete();
+                const form = document.querySelector('#form-lanchonete');
+                const resultDisplay = document.querySelector('#result');
+                const itemList = document.querySelector('#itemList');
+                const addItemButton = document.querySelector('#addItem');
+
+                function removeItem(event) {
+                    event.target.parentElement.remove();
+                }
+
+                // Função para adicionar um novo conjunto de seleção de item e quantidade
+                function addNewItem() {
+                    const itemContainer = document.createElement('div');
+                    itemContainer.classList.add('d-flex', 'align-items-center', 'mb-2');
+
+                    const itemDropdown = document.createElement('select');
+                    itemDropdown.name = 'item-dropdown';
+                    itemDropdown.classList.add('form-control', 'mr-2');
+                    for(let item in caixa.cardapio) {
+                        const option = document.createElement('option');
+                        option.value = item;
+                        option.textContent = item.charAt(0).toUpperCase() + item.slice(1);
+                        itemDropdown.appendChild(option);
+                    }
+
+                    const quantityInput = document.createElement('input');
+                    quantityInput.type = 'number';
+                    quantityInput.name = 'item-quantity';
+                    quantityInput.min = '1';
+                    quantityInput.value = '1';
+                    quantityInput.classList.add('form-control', 'mr-2');
+
+                    const removeButton = document.createElement('button');
+                    removeButton.type = 'button';
+                    removeButton.textContent = 'Remover';
+                    removeButton.classList.add('btn', 'btn-danger');
+                    removeButton.addEventListener('click', removeItem);
+
+                    itemContainer.appendChild(itemDropdown);
+                    itemContainer.appendChild(quantityInput);
+                    itemContainer.appendChild(removeButton);
+
+                    itemList.appendChild(itemContainer);
+                }
+
+                // Inicialmente, adicione um conjunto de item/quantidade
+                addNewItem();
+                addItemButton.addEventListener('click', addNewItem);
+
+                form.addEventListener('submit', function(e) {
+                    e.preventDefault();
+
+                    const metodoDePagamento = form.querySelector('[name="metodo-de-pagamento"]').value;
+                    const itens = [];
+                    const dropdowns = Array.from(form.querySelectorAll('[name="item-dropdown"]'));
+                    const quantities = Array.from(form.querySelectorAll('[name="item-quantity"]'));
+
+                    dropdowns.forEach((dropdown, index) => {
+                        itens.push(dropdown.value + ',' + quantities[index].value);
+                    });
+
+                    const resultado = caixa.calcularValorDaCompra(metodoDePagamento, itens);
+                    resultDisplay.textContent = resultado;
+                });
+            });
+        </script>
+    </body>
+</html>
